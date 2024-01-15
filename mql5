@@ -1,0 +1,138 @@
+
+//+------------------------------------------------------------------+
+//|                                              Gold Multi Hunter   |
+//|                             Copyright © 2021 Forex Robot Easy Team |
+//|                                            http://forexroboteasy.com |
+//+------------------------------------------------------------------+
+
+//--- External parameters
+extern double StopLoss = 100.0; // Stop Loss value in points
+
+//--- Global variables
+int ticket = 0; // Trade ticket number
+double virtualProfit = 0.0; // Virtual profit
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   // Close all open trades before deinitialization
+   CloseAllTrades();
+}
+
+//+------------------------------------------------------------------+
+//| Expert start function                                            |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   // Check if it is evening quiet time
+   if (IsEveningQuietTime())
+   {
+      // Loop through each currency pair
+      for (int i = 0; i < 5; i++)
+      {
+         // Check market volatility
+         if (IsVolatilityFilterPassed(Symbol[i]))
+         {
+            // Check if there is an open trade for the current symbol
+            if (!IsTradeOpen(Symbol[i]))
+            {
+               // Open a new trade
+               OpenTrade(Symbol[i]);
+            }
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Check if it is evening quiet time                                |
+//+------------------------------------------------------------------+
+bool IsEveningQuietTime()
+{
+   datetime currentTime = TimeLocal();
+   datetime eveningQuietTimeStart = StrToTime('22:00');
+   datetime eveningQuietTimeEnd = StrToTime('00:00');
+
+   if (currentTime >= eveningQuietTimeStart && currentTime <= eveningQuietTimeEnd)
+      return true;
+
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Check if market volatility filter is passed                      |
+//+------------------------------------------------------------------+
+bool IsVolatilityFilterPassed(const string symbol)
+{
+   // Implement market volatility filter logic here
+   // Return true if filter is passed, false otherwise
+   return true;
+}
+
+//+------------------------------------------------------------------+
+//| Check if there is an open trade for the given symbol              |
+//+------------------------------------------------------------------+
+bool IsTradeOpen(const string symbol)
+{
+   bool result = false;
+
+   for (int i = 0; i < OrdersTotal(); i++)
+   {
+      if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+      {
+         if (OrderSymbol() == symbol && OrderMagicNumber() == MagicNumber())
+         {
+            result = true;
+            break;
+         }
+      }
+   }
+
+   return result;
+}
+
+//+------------------------------------------------------------------+
+//| Open a new trade                                                  |
+//+------------------------------------------------------------------+
+void OpenTrade(const string symbol)
+{
+   // Implement trade opening logic here
+   // Set entry and exit points, stop loss, and virtual profit tracking
+   // Calculate trade size and position risk
+   // Place the trade using OrderSend() function
+}
+
+//+------------------------------------------------------------------+
+//| Close all open trades                                            |
+//+------------------------------------------------------------------+
+void CloseAllTrades()
+{
+   for (int i = OrdersTotal() - 1; i >= 0; i--)
+   {
+      if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+      {
+         if (OrderMagicNumber() == MagicNumber())
+         {
+            OrderClose(OrderTicket(), OrderLots(), Bid, Slippage, Red);
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Get magic number                                                  |
+//+------------------------------------------------------------------+
+int MagicNumber()
+{
+   return 12345; // Replace with your desired magic number
+}
